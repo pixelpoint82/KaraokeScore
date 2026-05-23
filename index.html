@@ -399,10 +399,10 @@ function detectVoice(){
 
     let volume = dataArray.reduce((a,b)=>a+b) / dataArray.length;
 
-    if(volume > 8){
+    if(volume > 10){
         statusEl.innerHTML = "🎤 SINGING";
 
-        let increase = Math.floor(volume * 0.8);
+        let increase = Math.floor(volume * 0.9);
         currentScore += increase;
 
         if(currentScore > 999){
@@ -410,14 +410,14 @@ function detectVoice(){
         }
 
         /* REACTIVE GLOW */
-        let glow = Math.min(volume / 2, 40);
+        let glow = Math.min(volume / 2, 30);
         scoreEl.style.textShadow = `
             0 0 ${glow}px gold,
             0 0 ${glow*2}px orange,
             0 0 ${glow*3}px #ffae00
         `;
 
-        micCircle.style.transform = `scale(${1 + volume/150})`;
+        micCircle.style.transform = `scale(${1 + volume/140})`;
     } else {
         statusEl.innerHTML = "🎤 WAITING FOR VOICE";
         micCircle.style.transform = "scale(1)";
