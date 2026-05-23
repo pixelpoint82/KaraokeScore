@@ -1,1 +1,482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
+<title>Karaoke Voice Scoring</title>
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Arial, sans-serif;
+    -webkit-tap-highlight-color: transparent;
+}
+
+body{
+    background:linear-gradient(180deg,#120018,#1b0030,#000);
+    min-height:100vh;
+    overflow:hidden;
+    color:white;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+}
+
+.app{
+    width:100%;
+    height:100vh;
+    position:relative;
+    overflow:hidden;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    flex-direction:column;
+    padding:20px;
+}
+
+/* HIGH SCORE */
+.high-container{
+    position:absolute;
+    top:20px;
+    left:20px;
+    z-index:20;
+}
+
+.high-title{
+    font-size:18px;
+    color:#00e5ff;
+    letter-spacing:2px;
+    text-shadow:0 0 10px #00e5ff;
+}
+
+.high-score{
+    font-size:55px;
+    color:gold;
+    font-weight:bold;
+    text-shadow:
+        0 0 10px gold,
+        0 0 20px orange,
+        0 0 40px orange;
+    animation:highGlow 1s infinite alternate;
+}
+
+/* CURRENT SCORE */
+.score{
+    font-size:150px;
+    font-weight:bold;
+    color:gold;
+    text-shadow:
+        0 0 15px gold,
+        0 0 35px orange,
+        0 0 60px #ffae00;
+    animation:scorePulse 0.8s infinite alternate;
+    transition:0.2s;
+}
+
+/* STATUS */
+.status{
+    margin-top:15px;
+    font-size:24px;
+    letter-spacing:3px;
+    color:#00e5ff;
+    text-shadow:0 0 10px #00e5ff;
+    text-align: center;
+    max-width: 90%;
+}
+
+/* MIC CIRCLE */
+.mic-circle{
+    width:140px;
+    height:140px;
+    border-radius:50%;
+    margin-top:30px;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    background:rgba(177,0,255,0.15);
+    border:4px solid #b100ff;
+    box-shadow:
+        0 0 15px #b100ff,
+        0 0 40px #7b00ff;
+    animation:micPulse 1.2s infinite;
+}
+
+.mic-icon{
+    font-size:60px;
+}
+
+/* BUTTONS */
+.buttons{
+    margin-top:35px;
+    display:flex;
+    gap:20px;
+    flex-wrap:wrap;
+    justify-content:center;
+}
+
+button{
+    border:none;
+    padding:18px 30px;
+    border-radius:16px;
+    font-size:18px;
+    font-weight:bold;
+    color:white;
+    background:linear-gradient(45deg,#7b00ff,#b100ff);
+    box-shadow:
+        0 0 15px #b100ff,
+        0 0 25px #7b00ff;
+    cursor:pointer;
+    transition:0.2s;
+    min-width:150px;
+}
+
+button:active{
+    transform:scale(0.95);
+}
+
+/* NEW HIGH SCORE */
+.new-high{
+    position:absolute;
+    top:120px;
+    left:50%;
+    transform:translateX(-50%);
+    font-size:40px;
+    font-weight:bold;
+    color:#00ff95;
+    opacity:0;
+    text-shadow:
+        0 0 10px #00ff95,
+        0 0 20px #00ff95;
+}
+
+/* FLASH */
+.flash{
+    position:absolute;
+    inset:0;
+    background:white;
+    opacity:0;
+    pointer-events:none;
+}
+
+/* CONFETTI */
+.confetti{
+    position:absolute;
+    width:12px;
+    height:12px;
+    top:-20px;
+    animation:fall linear forwards;
+}
+
+/* ANIMATIONS */
+@keyframes highGlow{
+    from{transform:scale(1);}
+    to{transform:scale(1.05);}
+}
+
+@keyframes scorePulse{
+    from{transform:scale(1);}
+    to{transform:scale(1.03);}
+}
+
+@keyframes micPulse{
+    0%{
+        transform:scale(1);
+        box-shadow:
+        0 0 15px #b100ff,
+        0 0 40px #7b00ff;
+    }
+    50%{
+        transform:scale(1.08);
+        box-shadow:
+        0 0 25px #ff00ff,
+        0 0 60px #7b00ff;
+    }
+    100%{
+        transform:scale(1);
+    }
+}
+
+@keyframes flashAnim{
+    from{opacity:0.8;}
+    to{opacity:0;}
+}
+
+@keyframes highText{
+    0%{
+        opacity:0;
+        transform:translateX(-50%) translateY(40px);
+    }
+    20%{opacity:1;}
+    80%{opacity:1;}
+    100%{
+        opacity:0;
+        transform:translateX(-50%) translateY(-30px);
+    }
+}
+
+@keyframes fall{
+    to{
+        transform:translateY(120vh) rotate(720deg);
+        opacity:0;
+    }
+}
+
+/* MOBILE */
+@media(max-width:768px){
+    .score{
+        font-size:95px;
+    }
+    .high-score{
+        font-size:40px;
+    }
+    .status{
+        font-size:16px;
+    }
+    .new-high{
+        font-size:26px;
+        text-align:center;
+        width:90%;
+    }
+    button{
+        width:100%;
+        max-width:250px;
+    }
+    .mic-circle{
+        width:110px;
+        height:110px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div class="app">
+    <div class="flash" id="flash"></div>
+
+    <div class="high-container">
+        <div class="high-title">HIGH SCORE</div>
+        <div class="high-score" id="highScore">000</div>
+    </div>
+
+    <div class="new-high" id="newHigh">
+        NEW HIGH SCORE!
+    </div>
+
+    <div class="score" id="score">000</div>
+
+    <div class="status" id="status">
+        🎤 READY
+    </div>
+
+    <div class="mic-circle" id="micCircle">
+        <div class="mic-icon">🎤</div>
+    </div>
+
+    <div class="buttons">
+        <button onclick="startMic()">START MIC</button>
+        <button onclick="stopMic()">STOP</button>
+    </div>
+</div>
+
+<audio id="highSound" src="https://assets.mixkit.co/active_storage/sfx/2013/2013-preview.mp3" preload="auto"></audio>
+<audio id="cheerSound" src="https://assets.mixkit.co/active_storage/sfx/1435/1435-preview.mp3" preload="auto"></audio>
+
+<script>
+let audioContext;
+let analyser;
+let microphone;
+let currentStream = null; 
+let dataArray;
+let animationFrame;
+
+let currentScore = 0;
+let highScore = 0;
+let isFirstHighScore = true;
+
+const scoreEl = document.getElementById("score");
+const highEl = document.getElementById("highScore");
+const statusEl = document.getElementById("status");
+const newHighEl = document.getElementById("newHigh");
+const flashEl = document.getElementById("flash");
+const micCircle = document.getElementById("micCircle");
+
+const highSound = document.getElementById("highSound");
+const cheerSound = document.getElementById("cheerSound");
+
+function formatScore(num){
+    return String(num).padStart(3, '0');
+}
+
+/* START MICROPHONE */
+async function startMic(){
+    // Clean up any existing instances before starting fresh
+    stopMic();
+    
+    // Reset score tracking for the new session
+    currentScore = 0;
+    scoreEl.innerHTML = formatScore(currentScore);
+    isFirstHighScore = highScore === 0;
+
+    try {
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+            throw new Error("NOT_SUPPORTED");
+        }
+
+        const stream = await navigator.mediaDevices.getUserMedia({
+            audio: true,
+            video: false
+        });
+
+        currentStream = stream; 
+
+        audioContext = new(window.AudioContext || window.webkitAudioContext)();
+        analyser = audioContext.createAnalyser();
+        microphone = audioContext.createMediaStreamSource(stream);
+
+        microphone.connect(analyser);
+        analyser.fftSize = 256;
+
+        const bufferLength = analyser.frequencyBinCount;
+        dataArray = new Uint8Array(bufferLength);
+
+        statusEl.innerHTML = "🎤 LISTENING";
+        detectVoice();
+
+    } catch(err) {
+        console.error("Microphone initialization failed:", err);
+        cleanupAudioState();
+        
+        if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
+            statusEl.innerHTML = "❌ MIC BLOCKED. Please reset your browser mic permissions.";
+        } else if (err.message === "NOT_SUPPORTED") {
+            statusEl.innerHTML = "❌ NOT SUPPORTED. Your browser doesn't support audio capture.";
+        } else {
+            statusEl.innerHTML = "❌ MIC ERROR. Please ensure a microphone is plugged in.";
+        }
+    }
+}
+
+/* STOP */
+function stopMic(){
+    cleanupAudioState();
+    statusEl.innerHTML = "🎤 STOPPED";
+}
+
+/* CLEANUP ENGINE STATE */
+function cleanupAudioState() {
+    if (animationFrame) {
+        cancelAnimationFrame(animationFrame);
+    }
+    
+    // Completely stop the hardware stream tracks
+    if (currentStream) {
+        currentStream.getTracks().forEach(track => track.stop());
+        currentStream = null;
+    }
+
+    if (audioContext) {
+        if (audioContext.state !== 'closed') {
+            audioContext.close();
+        }
+        audioContext = null;
+    }
+    
+    // Reset mechanical elements visually
+    if(micCircle) {
+        micCircle.style.transform = "scale(1)";
+    }
+}
+
+/* DETECT VOICE */
+function detectVoice(){
+    if (!analyser || !audioContext || audioContext.state === 'closed') return;
+
+    analyser.getByteFrequencyData(dataArray);
+
+    let volume = dataArray.reduce((a,b)=>a+b) / dataArray.length;
+
+    if(volume > 8){
+        statusEl.innerHTML = "🎤 SINGING";
+
+        let increase = Math.floor(volume * 0.8);
+        currentScore += increase;
+
+        if(currentScore > 999){
+            currentScore = 999;
+        }
+
+        /* REACTIVE GLOW */
+        let glow = Math.min(volume / 2, 40);
+        scoreEl.style.textShadow = `
+            0 0 ${glow}px gold,
+            0 0 ${glow*2}px orange,
+            0 0 ${glow*3}px #ffae00
+        `;
+
+        micCircle.style.transform = `scale(${1 + volume/150})`;
+    } else {
+        statusEl.innerHTML = "🎤 WAITING FOR VOICE";
+        micCircle.style.transform = "scale(1)";
+    }
+
+    /* HIGH SCORE CHECK */
+    if(currentScore > highScore){
+        highScore = currentScore;
+        highEl.innerHTML = formatScore(highScore);
+        
+        // Prevent high score fanfare triggers on absolute starting tick zeroes
+        if (!isFirstHighScore && highScore > 0) {
+            triggerHighScoreEffects();
+        }
+    }
+
+    scoreEl.innerHTML = formatScore(currentScore);
+    animationFrame = requestAnimationFrame(detectVoice);
+}
+
+/* HIGH SCORE EFFECTS */
+function triggerHighScoreEffects(){
+    // Use try-catch blocks for playback to prevent browser interaction policy errors
+    try {
+        highSound.currentTime = 0;
+        cheerSound.currentTime = 0;
+        highSound.play().catch(e => console.log("Audio play blocked until user gesture"));
+        cheerSound.play().catch(e => console.log("Audio play blocked until user gesture"));
+    } catch(e) {
+        console.log("Audio play error:", e);
+    }
+
+    flashEl.style.animation = "none";
+    void flashEl.offsetWidth;
+    flashEl.style.animation = "flashAnim 0.5s forwards";
+
+    newHighEl.style.animation = "none";
+    void newHighEl.offsetWidth;
+    newHighEl.style.animation = "highText 2s forwards";
+
+    createConfetti();
+}
+
+/* CONFETTI */
+function createConfetti(){
+    for(let i=0;i<60;i++){
+        const confetti = document.createElement("div");
+        confetti.classList.add("confetti");
+        confetti.style.left = Math.random()*window.innerWidth + "px";
+        confetti.style.background = `hsl(${Math.random()*360},100%,50%)`;
+        confetti.style.animationDuration = (Math.random()*3+2)+"s";
+
+        document.body.appendChild(confetti);
+
+        setTimeout(()=>{
+            confetti.remove();
+        },5000);
+    }
+}
+</script>
+</body>
+</html>
