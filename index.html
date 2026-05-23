@@ -399,7 +399,7 @@ function detectVoice(){
 
     let volume = dataArray.reduce((a,b)=>a+b) / dataArray.length;
 
-    if(volume > 100){
+    if(volume > 50){
         statusEl.innerHTML = "🎤 SINGING";
 
         let increase = Math.floor(volume * 0.01);
