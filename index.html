@@ -399,10 +399,10 @@ function detectVoice(){
 
     let volume = dataArray.reduce((a,b)=>a+b) / dataArray.length;
 
-    if(volume > 10){
+    if(volume > 50){
         statusEl.innerHTML = "🎤 SINGING";
 
-        let increase = Math.floor(volume * 0.01);
+        let increase = Math.floor(volume * 0.1);
         currentScore += increase;
 
         if(currentScore > 999){
