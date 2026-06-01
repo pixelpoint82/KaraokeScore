@@ -402,7 +402,7 @@ function detectVoice(){
     if(volume > 90){
         statusEl.innerHTML = "🎤 SINGING";
 
-        let increase = Math.floor(volume * 0.1);
+        let increase = Math.floor(volume * 0.01);
         currentScore += increase;
 
         if(currentScore > 999){
